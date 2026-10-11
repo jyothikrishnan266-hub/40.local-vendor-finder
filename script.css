@@ -1,0 +1,203 @@
+const STORAGE_KEY = "localVendorFinderData";
+
+const starterVendors = [
+  {
+    id: 1,
+    name: "City Grocery Wholesale",
+    category: "Grocery",
+    city: "Hyderabad",
+    address: "Begum Bazar, Hyderabad",
+    phone: "",
+    products: "Rice, pulses, cooking oil"
+  },
+  {
+    id: 2,
+    name: "Modern Furniture Suppliers",
+    category: "Furniture",
+    city: "Hyderabad",
+    address: "Kukatpally, Hyderabad",
+    phone: "",
+    products: "Tables, chairs, sofas"
+  },
+  {
+    id: 3,
+    name: "Electrical Supply Store",
+    category: "Electronics",
+    city: "Hyderabad",
+    address: "Secunderabad, Hyderabad",
+    phone: "",
+    products: "Cables, lights, switches"
+  }
+];
+
+function loadVendors() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    return saved === null ? starterVendors : JSON.parse(saved);
+  } catch {
+    return starterVendors;
+  }
+}
+
+let vendors = loadVendors();
+
+const $ = id => document.getElementById(id);
+
+function saveVendors() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(vendors));
+}
+
+function escapeHTML(value) {
+  return String(value).replace(/[&<>"']/g, char => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[char]);
+}
+
+function renderVendors(list = vendors) {
+  $("resultCount").textContent =
+    `${list.length} vendor${list.length === 1 ? "" : "s"} found`;
+
+  const container = $("vendorList");
+
+  if (!list.length) {
+    container.innerHTML =
+      '<div class="empty">No vendors found. Try another search.</div>';
+    return;
+  }
+
+  container.innerHTML = list.map(vendor => {
+    const query = encodeURIComponent(
+      `${vendor.name}, ${vendor.address}, ${vendor.city}`
+    );
+
+    const phoneDigits = vendor.phone.replace(/[^\d+]/g, "");
+    const safePhone = /^[+]?[\d]{7,15}$/.test(phoneDigits)
+      ? phoneDigits : "";
+
+    return `
+      <article class="vendor-card">
+        <span class="category">${escapeHTML(vendor.category)}</span>
+        <h3>${escapeHTML(vendor.name)}</h3>
+        <p><strong>📍 Location:</strong>
+          ${escapeHTML(vendor.city)}</p>
+        <p><strong>Address:</strong>
+          ${escapeHTML(vendor.address)}</p>
+        <p><strong>Products:</strong>
+          ${escapeHTML(vendor.products)}</p>
+        <p><strong>Phone:</strong>
+          ${escapeHTML(vendor.phone || "Not provided")}</p>
+
+        <div class="vendor-actions">
+          ${safePhone ? `
+            <a class="call-btn" href="tel:${encodeURIComponent(safePhone)}">
+              Call Vendor
+            </a>` : ""}
+          <a class="map-btn"
+             href="https://www.google.com/maps/search/?api=1&query=${query}"
+             target="_blank" rel="noopener noreferrer">
+            View Map
+          </a>
+          <button class="delete-btn"
+            data-delete="${vendor.id}">Delete</button>
+        </div>
+      </article>
+    `;
+  }).join("");
+}
+
+function searchVendors() {
+  const name = $("searchName").value.trim().toLowerCase();
+  const city = $("searchCity").value.trim().toLowerCase();
+  const category = $("searchCategory").value;
+
+  const results = vendors.filter(vendor => {
+    const matchesName =
+      `${vendor.name} ${vendor.products}`.toLowerCase().includes(name);
+
+    const matchesCity =
+      `${vendor.city} ${vendor.address}`.toLowerCase().includes(city);
+
+    const matchesCategory =
+      !category || vendor.category === category;
+
+    return matchesName && matchesCity && matchesCategory;
+  });
+
+  renderVendors(results);
+}
+
+$("searchBtn").addEventListener("click", searchVendors);
+
+$("resetBtn").addEventListener("click", () => {
+  $("searchName").value = "";
+  $("searchCity").value = "";
+  $("searchCategory").value = "";
+  renderVendors();
+});
+
+["searchName", "searchCity"].forEach(id => {
+  $(id).addEventListener("keydown", event => {
+    if (event.key === "Enter") searchVendors();
+  });
+});
+
+$("searchCategory").addEventListener("change", searchVendors);
+
+$("showFormBtn").addEventListener("click", () => {
+  $("formSection").classList.remove("hidden");
+  $("formSection").scrollIntoView({ behavior: "smooth" });
+});
+
+$("cancelBtn").addEventListener("click", () => {
+  $("vendorForm").reset();
+  $("formSection").classList.add("hidden");
+});
+
+$("vendorForm").addEventListener("submit", event => {
+  event.preventDefault();
+
+  const vendor = {
+    id: Date.now(),
+    name: $("vendorName").value.trim(),
+    category: $("vendorCategory").value,
+    city: $("vendorCity").value.trim(),
+    address: $("vendorAddress").value.trim(),
+    phone: $("vendorPhone").value.trim(),
+    products: $("vendorProducts").value.trim()
+  };
+
+  if (!vendor.name || !vendor.city || !vendor.address ||
+      !vendor.category || !vendor.products) {
+    alert("Please complete all required fields.");
+    return;
+  }
+
+  vendors.push(vendor);
+  saveVendors();
+
+  $("vendorForm").reset();
+  $("formSection").classList.add("hidden");
+
+  searchVendors();
+  alert("Vendor added successfully!");
+});
+
+$("vendorList").addEventListener("click", event => {
+  const button = event.target.closest("[data-delete]");
+  if (!button) return;
+
+  const id = Number(button.dataset.delete);
+  const vendor = vendors.find(item => item.id === id);
+
+  if (!vendor || !confirm(`Delete ${vendor.name}?`)) return;
+
+  vendors = vendors.filter(item => item.id !== id);
+  saveVendors();
+  searchVendors();
+});
+
+renderVendors();

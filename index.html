@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Local Vendor Finder</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>📍 Local Vendor Finder</h1>
+  <p>Discover and manage local suppliers</p>
+</header>
+
+<main>
+  <section class="search-panel">
+    <h2>Find a Vendor</h2>
+    <div class="search-grid">
+      <input id="searchName" placeholder="Vendor or product name">
+      <input id="searchCity" placeholder="City or area">
+      <select id="searchCategory">
+        <option value="">All categories</option>
+        <option>Grocery</option>
+        <option>Furniture</option>
+        <option>Electronics</option>
+        <option>Clothing</option>
+        <option>Hardware</option>
+        <option>Other</option>
+      </select>
+      <button id="searchBtn">Search Vendors</button>
+    </div>
+    <button id="resetBtn" class="secondary">Show All Vendors</button>
+  </section>
+
+  <section>
+    <div class="section-heading">
+      <h2>Vendor Directory</h2>
+      <button id="showFormBtn">+ Add Vendor</button>
+    </div>
+    <p id="resultCount" class="muted"></p>
+    <div id="vendorList" class="vendor-grid"></div>
+  </section>
+
+  <section id="formSection" class="search-panel hidden">
+    <h2>Add New Vendor</h2>
+    <form id="vendorForm">
+      <label for="vendorName">Vendor Name</label>
+      <input id="vendorName" required placeholder="Business name">
+
+      <label for="vendorCategory">Category</label>
+      <select id="vendorCategory" required>
+        <option value="">Select category</option>
+        <option>Grocery</option>
+        <option>Furniture</option>
+        <option>Electronics</option>
+        <option>Clothing</option>
+        <option>Hardware</option>
+        <option>Other</option>
+      </select>
+
+      <label for="vendorCity">City / Area</label>
+      <input id="vendorCity" required placeholder="e.g. Hyderabad">
+
+      <label for="vendorAddress">Full Address</label>
+      <input id="vendorAddress" required placeholder="Shop address">
+
+      <label for="vendorPhone">Phone Number</label>
+      <input id="vendorPhone" type="tel" required
+        placeholder="Contact number">
+
+      <label for="vendorProducts">Products Supplied</label>
+      <input id="vendorProducts" required
+        placeholder="e.g. Rice, wheat, pulses">
+
+      <button type="submit">Save Vendor</button>
+      <button type="button" id="cancelBtn" class="secondary">
+        Cancel
+      </button>
+    </form>
+  </section>
+</main>
+
+<footer>Local Vendor Finder © 2026</footer>
+<script src="script.js"></script>
+</body>
+</html>
